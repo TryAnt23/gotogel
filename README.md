@@ -1,6 +1,6 @@
 # gotogel
 
-A new Flutter project.
+A new Flutter project webview.
 
 ## Getting Started
 
