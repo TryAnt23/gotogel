@@ -1,8 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.gotogel">
+    package="com.kdigitech.gotogel">
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+    
    <application
-        android:label="gotogel"
-        android:icon="@mipmap/ic_launcher">
+        android:label="Gotogel"
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
