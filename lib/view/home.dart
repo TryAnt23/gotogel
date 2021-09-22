@@ -45,7 +45,7 @@ class HomeScreenState extends State<HomeScreen> //{
       switch(index){
         case 1:
           Map args = {
-            'url' : StringConst.URL_NAME,
+            'url' : StringConst.URL_ONE,
             'token' : '',
             'title' : "Chat"
           };
