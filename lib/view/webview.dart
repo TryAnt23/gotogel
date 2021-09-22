@@ -1,7 +1,7 @@
-import 'dart:async';
-
+import 'dart:io';
+import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:gotogel/values/component.dart';
 
 class WebviewScreen extends StatefulWidget {
 
@@ -11,7 +11,7 @@ class WebviewScreen extends StatefulWidget {
   final bool shouldPrepareUrl;
   final String bearerToken;
 
-  WebviewScreen(this.url, {Key key, this.title = 'TwoSpaces', this.footerButtons = const [], this.shouldPrepareUrl = true, this.bearerToken}) : super(key: key);
+  WebviewScreen(this.url, {Key key, this.title = 'Gotogel', this.footerButtons = const [], this.shouldPrepareUrl = true, this.bearerToken}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -24,12 +24,10 @@ class WebviewScreen extends StatefulWidget {
 class WebviewState extends State<WebviewScreen> {
 
   String url;
-  final Completer<WebViewController> _controller = Completer<WebViewController>();
 
   @override
   void initState() {
     super.initState();
-    // url = widget.shouldPrepareUrl ? prepareUrl(widget.url, user: widget.user) : widget.url;
     url = widget.url;
   }
 
@@ -41,36 +39,23 @@ class WebviewState extends State<WebviewScreen> {
   @override
     Widget build(BuildContext context) { 
       return Scaffold(
-        backgroundColor: Colors.white,
-        // appBar: getAppBar(widget.title),
-        body:
-        WebView(
-          initialUrl: 'http://206.189.227.248/',
-          javascriptMode: JavascriptMode.unrestricted,
-          onWebViewCreated: (WebViewController webViewController) {
-            _controller.complete(webViewController);
-          },
-          onProgress: (int progress) {
-            print("WebView is loading (progress : $progress%)");
-          },
-          // javascriptChannels: <JavascriptChannel>{
-          //   _toasterJavascriptChannel(context),
-          // },
-          navigationDelegate: (NavigationRequest request) {
-            if (request.url.startsWith('https://www.youtube.com/')) {
-              print('blocking navigation to $request}');
-              return NavigationDecision.prevent;
-            }
-            print('allowing navigation to $request');
-            return NavigationDecision.navigate;
-          },
-          onPageStarted: (String url) {
-            print('Page started loading: $url');
-          },
-          onPageFinished: (String url) {
-            print('Page finished loading: $url');
-          },
-          gestureNavigationEnabled: true,
+        backgroundColor: Color(0xff00880c),
+        appBar: getAppBar(widget.title),
+        body: WebviewScaffold(
+          initialChild: 
+          Container(
+            color: Colors.black,
+            child: Center(child: 
+            CircularProgressIndicator()),
+            // Image.asset('assets/images/loading.gif', width: 40, height: 40)), 
+          ),
+          url: url,
+          withJavascript: true,
+          hidden: true,
+          ignoreSSLErrors: true,
+          headers: widget.bearerToken != null ? {
+            HttpHeaders.authorizationHeader: 'Bearer ${widget.bearerToken}',
+          } : {},
         )
       );
       

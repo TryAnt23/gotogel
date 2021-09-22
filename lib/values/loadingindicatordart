@@ -1,0 +1,22 @@
+import 'package:flutter/material.dart';
+import 'package:gotogel/values/global.dart';
+
+class LoadingBar extends StatelessWidget {
+
+  @override
+    Widget build(BuildContext context) { 
+      return Container(
+        child: SpinKitDualRing(
+          color: Global.mainColor,
+          // itemBuilder: (_, int index) {
+          //   return DecoratedBox(
+          //     decoration: BoxDecoration(
+          //       color: Global.mainColor
+          //     ),
+          //   );
+          // },
+          // color: Colors.white,
+        ),
+      );
+    }
+}

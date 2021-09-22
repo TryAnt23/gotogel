@@ -55,7 +55,9 @@ class _SplashScreenState extends State<SplashScreen>
   void textControllerListener() {
     if (_textController.status == AnimationStatus.completed) {
       Future.delayed(Duration(milliseconds: 1000), () {
-        Navigator.pushReplacementNamed(context, route.WebviewScreen);
+        // Navigator.pushReplacementNamed(context, route.HomeScreen);
+        Navigator.pushNamedAndRemoveUntil(context, route.HomeScreen, (route) => false);
+        // Navigator.pushReplacementNamed(context, route.MyWidget);
         // Routers.navigator.pushNamedAndRemoveUntil(
         //   Routers.loginScreen,
         //   (Route<dynamic> route) => false,

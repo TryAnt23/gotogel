@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:gotogel/view/home.dart';
+import 'package:gotogel/view/homes.dart';
 import 'package:gotogel/view/splash_screen.dart';
 import 'package:gotogel/view/webview.dart';
 import 'route_paths.dart' as route;
@@ -14,6 +16,16 @@ class Router {
           break;
         case route.WebviewScreen:
           nextScreen = WebviewScreen(args);
+          break; 
+        case route.HomeScreen:
+          nextScreen = HomeScreen();
+          break; 
+        case route.MyWidget:
+          nextScreen = MyWidget();
+          break; 
+        case route.WebViewOne:
+          var map = args as Map;
+          nextScreen = WebviewScreen(map['url'], title: map['title'], bearerToken: map['token']);
           break; 
           
         // case route.BackendWebView:
