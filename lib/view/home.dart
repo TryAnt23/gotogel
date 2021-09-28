@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:gotogel/values/values.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -11,29 +13,35 @@ class HomeScreen extends StatefulWidget {
   }
 }
 
-
+WebViewController controllerGlobal;
 
 class HomeScreenState extends State<HomeScreen> //{
-                    with TickerProviderStateMixin<HomeScreen>{
-
-  // final Completer<WebViewController> _controller = Completer<WebViewController>();
+                    with TickerProviderStateMixin<HomeScreen>{ 
   TabController _tabController;
   DateTime currentBackPressTime;
   bool isLoading=true;
+  AnimationController controller;
+  bool isProcess=true;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this, initialIndex: 0);
-
-    // _tabController.addListener((){
-    //   print('my index is'+ _tabController.index.toString());
-    // });
+    controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 10),
+    )..addListener(() {
+        setState(() {});
+      });
+    controller.repeat(reverse: true); 
+  }
+  Future refreshData() async {
+    controllerGlobal.reload();
   }
 
   @override
-  void dispose() {  
-    // _tabController.dispose();
+  void dispose() { 
+    controller.dispose();
     super.dispose();
   }
 
@@ -41,6 +49,7 @@ class HomeScreenState extends State<HomeScreen> //{
   return TabBar(
     controller: _tabController,
     onTap: (index){
+      controllerGlobal.reload();
       _tabController.animateTo(0);
       switch(index){
         case 1:
@@ -101,112 +110,111 @@ class HomeScreenState extends State<HomeScreen> //{
 }
 
 Widget home(BuildContext context){
-  return 
-  // WebviewScaffold(
-  //   initialChild: 
-  //   Container(
-  //     color: Colors.black,
-  //     child: Center(child: CircularProgressIndicator()),
-  //     // Image.asset('assets/images/loading.gif', width: 40, height: 40)), 
-  //   ),
-  //   url: StringConst.URL_NAME,
-  //   withJavascript: true,
-  //   hidden: true,
-  //   ignoreSSLErrors: true,
-  // );
-  
-  Container(color: Colors.black,
-  child:
-    Stack(
-      children: <Widget>[
-        WebView(
-          initialUrl: StringConst.URL_NAME,
-          javascriptMode: JavascriptMode.unrestricted,
-          onWebViewCreated: (WebViewController webViewController) {
-            // _controller.complete(webViewController);
-          },
-          onProgress: (int progress) {
-            print("WebView is loading (progress : $progress%)");
-          },
-          // javascriptChannels: <JavascriptChannel>{
-          //   _toasterJavascriptChannel(context),
-          // },
-          navigationDelegate: (NavigationRequest request) {
-            if (request.url.startsWith('https://www.youtube.com/')) {
-              print('blocking navigation to $request}');
-              return NavigationDecision.prevent;
-            }
-            print('allowing navigation to $request');
-            return NavigationDecision.navigate;
-          },
-          onPageStarted: (String url) {
-            print('Page started loading: $url');
-          },
-          onPageFinished: (String url) {
-            setState(() {
-              isLoading = false;
-            });
-            print('Page finished loading: $url');
-          },
-          gestureNavigationEnabled: true,
-        ),
-      isLoading ? 
-      Container(
-        color: Colors.black,
-        child: Center(child: CircularProgressIndicator()),
-      ) : Stack(),
-    ],
-  )
+  return  
+    Container(color: Colors.black,
+    child:
+      Stack(
+        children: <Widget>[
+          WebView(
+            initialUrl: StringConst.URL_NAME,
+            javascriptMode: JavascriptMode.unrestricted,
+            onWebViewCreated: (WebViewController webViewController) {
+              // _controller.complete(webViewController);
+              controllerGlobal = webViewController;
+            },
+            onProgress: (int progress) {
+              if(progress<80){
+                isProcess = true;
+              }else{
+                isProcess = false;
+              }
+              // print("WebView is loading (progress : $progress%)");
+            },
+            javascriptChannels: <JavascriptChannel>{
+              _toasterJavascriptChannel(context),
+            },
+            navigationDelegate: (NavigationRequest request) {
+              if (request.url.startsWith('https://www.youtube.com/')) {
+                // print('blocking navigation to $request}');
+                return NavigationDecision.prevent;
+              }
+              // print('allowing navigation to $request');
+              return NavigationDecision.navigate;
+            },
+            onPageStarted: (String url) {
+              // print('Page started loading: $url');
+            },
+            onPageFinished: (String url) {
+              setState(() {
+                isLoading = false;
+              });
+              // print('Page finished loading: $url');
+            },
+            gestureNavigationEnabled: true,
+          ),
+        isLoading ? 
+        Container(
+          color: Colors.black,
+          child: Center(child: CircularProgressIndicator()),
+        ) : Stack(),
+        // Container(height:10,child:
+        isProcess ?
+          LinearProgressIndicator(
+            backgroundColor: Colors.black,
+            valueColor: AlwaysStoppedAnimation(Color(0xff00880c)),
+            minHeight: 3,
+          ) : Container(),
+      ],
+    )
   );
 }
 
-// JavascriptChannel _toasterJavascriptChannel(BuildContext context) {
-//   return JavascriptChannel(
-//     name: 'Toaster',
-//     onMessageReceived: (JavascriptMessage message) {
-//       // ignore: deprecated_member_use
-//       Scaffold.of(context).showSnackBar(
-//         SnackBar(content: Text(message.message)),
-//       );
-//     });
-//   }
+JavascriptChannel _toasterJavascriptChannel(BuildContext context) {
+  return JavascriptChannel(
+    name: 'Toaster',
+    onMessageReceived: (JavascriptMessage message) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message.message)));
+    });
+  }
 
-Future<bool> onWillPop() {
+// ignore: missing_return
+Future<bool> onWillPop(context) async {
     DateTime now = DateTime.now();
-    if (currentBackPressTime == null || 
+    if (await controllerGlobal.canGoBack()) {
+      // print("onwill goback");
+      controllerGlobal.goBack();
+    } else {
+      if (currentBackPressTime == null || 
         now.difference(currentBackPressTime) > Duration(seconds: 2)) {
-      currentBackPressTime = now;
-      SnackBar(
-        content: Text('Press back again to exit'),
-        duration: Duration(seconds: 3),
-      );
-      // Fluttertoast.showToast(msg: exit_warning);
-      return Future.value(false);
+        currentBackPressTime = now;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Press back again to exit")));
+        return Future.value(false);
+      }
+      return Future.value(true);
     }
-    return Future.value(true);
   }
 
   @override
     Widget build(BuildContext context) { 
       return DefaultTabController(
         length: 3,
-        child: Scaffold(
-          appBar: AppBar(
-            backgroundColor: Color(0xff00880c),
-            elevation: 0,
-            automaticallyImplyLeading: false,
-            flexibleSpace: SafeArea(
-              child: getTabBar(),
+        child: 
+        WillPopScope(
+          onWillPop: () => onWillPop(context),
+          child: 
+          Scaffold(
+            appBar: AppBar(
+              backgroundColor: Color(0xff00880c),
+              elevation: 0,
+              automaticallyImplyLeading: false,
+              flexibleSpace: SafeArea(
+                child: getTabBar(),
+              ),
             ),
-          ),
-          body: WillPopScope(child: home(context), onWillPop: onWillPop),
-          // TabBarView(children: [
-          //   home(context),
-          //   home(context),
-          //   home(context),
-          // ]),
+            body:  
+              home(context)), 
         )
-     );
+      );
     }
 
 }

@@ -47,7 +47,6 @@ class WebviewState extends State<WebviewScreen> {
             color: Colors.black,
             child: Center(child: 
             CircularProgressIndicator()),
-            // Image.asset('assets/images/loading.gif', width: 40, height: 40)), 
           ),
           url: url,
           withJavascript: true,
