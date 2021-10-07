@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gotogel/values/values.dart';
 import 'package:gotogel/route_paths.dart' as route;
+import 'package:package_info/package_info.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -15,6 +16,7 @@ class _SplashScreenState extends State<SplashScreen>
   Animation<double> _textAnimation;
   bool hasImageAnimationStarted = false;
   bool hasTextAnimationStarted = false;
+  String version='';
 
   @override
   void initState() {
@@ -32,6 +34,14 @@ class _SplashScreenState extends State<SplashScreen>
     _imageController.addListener(imageControllerListener);
     _textController.addListener(textControllerListener);
     run();
+    _initPackageInfo();
+  }
+
+  Future<void> _initPackageInfo() async {
+    final PackageInfo info = await PackageInfo.fromPlatform();
+    setState(() {
+      version = 'Version '+info.version+'('+info.buildNumber+')';
+    });
   }
 
   @override
@@ -55,13 +65,7 @@ class _SplashScreenState extends State<SplashScreen>
   void textControllerListener() {
     if (_textController.status == AnimationStatus.completed) {
       Future.delayed(Duration(milliseconds: 1000), () {
-        // Navigator.pushReplacementNamed(context, route.HomeScreen);
         Navigator.pushNamedAndRemoveUntil(context, route.HomeScreen, (route) => false);
-        // Navigator.pushReplacementNamed(context, route.MyWidget);
-        // Routers.navigator.pushNamedAndRemoveUntil(
-        //   Routers.loginScreen,
-        //   (Route<dynamic> route) => false,
-        // );
       });
     }
   }
@@ -130,6 +134,22 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                 )
               : Container(),
+              Positioned.fill(
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child:
+                  Container(padding: EdgeInsets.only(bottom: 20),
+                    child: 
+                    Text(
+                      version,
+                      style: TextStyle(fontSize: 16),
+                      // style: Styles.customTitleTextStyle(
+                      //   color: AppColors.primaryText,
+                      // ),
+                    ),
+                  ),
+                ),
+              )
         ],
       ),
     );

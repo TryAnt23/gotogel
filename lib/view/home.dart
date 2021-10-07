@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:gotogel/values/values.dart';
@@ -34,10 +35,11 @@ class HomeScreenState extends State<HomeScreen> //{
         setState(() {});
       });
     controller.repeat(reverse: true); 
+
+    if (Platform.isAndroid) WebView.platform = SurfaceAndroidWebView();
+
   }
-  Future refreshData() async {
-    controllerGlobal.reload();
-  }
+  
 
   @override
   void dispose() { 
@@ -144,11 +146,15 @@ Widget home(BuildContext context){
             onPageStarted: (String url) {
               // print('Page started loading: $url');
             },
-            onPageFinished: (String url) {
+            onPageFinished: (String url) async {
               setState(() {
                 isLoading = false;
               });
-              // print('Page finished loading: $url');
+              try {
+                await controllerGlobal.evaluateJavascript("console.log(document.documentElement.innerHTML);");
+              } catch (e) {
+                print(e.toString());
+              }
             },
             gestureNavigationEnabled: true,
           ),
@@ -173,6 +179,7 @@ JavascriptChannel _toasterJavascriptChannel(BuildContext context) {
   return JavascriptChannel(
     name: 'Toaster',
     onMessageReceived: (JavascriptMessage message) {
+      print(message.message);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message.message)));
     });
   }
@@ -187,7 +194,7 @@ Future<bool> onWillPop(context) async {
       if (currentBackPressTime == null || 
         now.difference(currentBackPressTime) > Duration(seconds: 2)) {
         currentBackPressTime = now;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Press back again to exit")));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Tekan sekali lagi untuk keluar")));
         return Future.value(false);
       }
       return Future.value(true);
