@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:gotogel/values/values.dart';
+import 'package:webview_flutter/platform_interface.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:gotogel/route_paths.dart' as route;
 
@@ -157,6 +158,9 @@ Widget home(BuildContext context){
               }
             },
             gestureNavigationEnabled: true,
+            onWebResourceError: (WebResourceError webviewerrr) {
+              print("Handle your Error Page here $isLoading");
+          },
           ),
         isLoading ? 
         Container(
