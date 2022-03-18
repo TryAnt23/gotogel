@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gotogel/values/global.dart';
 import 'package:gotogel/values/values.dart';
 import 'package:gotogel/route_paths.dart' as route;
 import 'package:package_info/package_info.dart';
@@ -16,11 +17,18 @@ class _SplashScreenState extends State<SplashScreen>
   Animation<double> _textAnimation;
   bool hasImageAnimationStarted = false;
   bool hasTextAnimationStarted = false;
-  String version='';
+  String version = '';
 
   @override
   void initState() {
     super.initState();
+
+    Global.getRemoteConfig().then((remoteConfig) {
+      debugPrint('========cekURL========');
+      debugPrint(remoteConfig.getString('main_url'));
+      Global.latestUriGlobal = remoteConfig.getString('main_url');
+    });
+
     _imageController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
@@ -29,7 +37,8 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(milliseconds: 500),
       vsync: this,
     );
-    _imageAnimation = Tween<double>(begin: 1, end: 1.5).animate(_imageController);
+    _imageAnimation =
+        Tween<double>(begin: 1, end: 1.5).animate(_imageController);
     _textAnimation = Tween<double>(begin: 3, end: 0.5).animate(_textController);
     _imageController.addListener(imageControllerListener);
     _textController.addListener(textControllerListener);
@@ -40,7 +49,7 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _initPackageInfo() async {
     final PackageInfo info = await PackageInfo.fromPlatform();
     setState(() {
-      version = 'Version '+info.version+'('+info.buildNumber+')';
+      version = 'Version ' + info.version + '(' + info.buildNumber + ')';
     });
   }
 
@@ -65,7 +74,14 @@ class _SplashScreenState extends State<SplashScreen>
   void textControllerListener() {
     if (_textController.status == AnimationStatus.completed) {
       Future.delayed(Duration(milliseconds: 1000), () {
-        Navigator.pushNamedAndRemoveUntil(context, route.HomeScreen, (route) => false);
+        if (Global.latestUriGlobal == '') {
+          //lempar ke page refresh layout single button
+          Navigator.pushNamedAndRemoveUntil(
+              context, route.RefreshPage, (route) => false);
+        } else {
+          Navigator.pushNamedAndRemoveUntil(
+              context, route.HomeScreen, (route) => false);
+        }
       });
     }
   }
@@ -113,8 +129,7 @@ class _SplashScreenState extends State<SplashScreen>
               ? Center(
                   child: AnimatedBuilder(
                     animation: _textController,
-                    child: 
-                    Image.asset(
+                    child: Image.asset(
                       ImagePath.logo,
                       height: 300,
                       width: 300,
@@ -134,22 +149,21 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                 )
               : Container(),
-              Positioned.fill(
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child:
-                  Container(padding: EdgeInsets.only(bottom: 20),
-                    child: 
-                    Text(
-                      version,
-                      style: TextStyle(fontSize: 16),
-                      // style: Styles.customTitleTextStyle(
-                      //   color: AppColors.primaryText,
-                      // ),
-                    ),
-                  ),
+          Positioned.fill(
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                padding: EdgeInsets.only(bottom: 20),
+                child: Text(
+                  version,
+                  style: TextStyle(fontSize: 16),
+                  // style: Styles.customTitleTextStyle(
+                  //   color: AppColors.primaryText,
+                  // ),
                 ),
-              )
+              ),
+            ),
+          )
         ],
       ),
     );
